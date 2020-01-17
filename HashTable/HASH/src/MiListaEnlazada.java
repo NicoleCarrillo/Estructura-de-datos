@@ -1,0 +1,275 @@
+import java.util.NoSuchElementException;
+
+//AUTOR NICOLE CARRILLO 
+//FECHA 11/02/19
+public class MiListaEnlazada<E> {
+	
+	private NodoLE<E> inicio;
+	private NodoLE<E> fin;
+	private int size;
+	
+	public MiListaEnlazada() { //ESTO ES SUPER IMPORTANTE SI NO MARCA ERROR
+		this.inicio=this.fin=null;
+		this.size=0;
+	}
+	
+	public MiListaEnlazada(E[]datos) { //TRANSFORMA UN ARREGLO EN UNA LISTA ENLAZADA 
+		for(int x=0;x<datos.length;x++) {
+			insertarInicio(datos[x]);
+		}
+	}
+	
+	public void insertarEn(E dato, int pos) throws IndexOutOfBoundsException{
+		if(pos==0)
+			throw new IndexOutOfBoundsException("NO PUEDE SER 0 LA POSICION, utiliza la otra funcion");
+		if(pos>=size())
+			throw new IndexOutOfBoundsException("NO PUEDE SER LA POSICION FINAL, utiliza la otra funcion");
+		
+		NodoLE<E> nvo=new NodoLE<>(dato);
+		NodoLE<E> auxiliar= inicio;
+		
+		for(int x=0;x<pos-1;x++) {
+			auxiliar=auxiliar.getNext(); //obtengo el nodo anterior
+		}
+		NodoLE<E>despues=auxiliar.getNext();//obtengo el nodo que va despues de donde lo quiero meter
+		
+		nvo.setNext(despues);
+		auxiliar.setNext(nvo);
+		size++;
+		
+	}
+	
+	public int size() { //ACCEDER AL TAMANO DE LA LISTA
+		return this.size;
+	}
+	
+	public E inicio() {// REGRESA EL VALOR UBICADO EN INICIO
+		try {
+		return this.inicio.getDato();
+		}catch (NullPointerException e) {
+			throw new NoSuchElementException("NO SE PUEDE REGRESAR UN ELEMENTO DE UNA LISTA VACIA");
+		}
+	}
+	
+	public E fin() { //REGRESA EL VALOR UBICADO EN FIN
+		try {
+		return this.fin.getDato();
+		}catch (NullPointerException e) {
+			throw new NoSuchElementException("NO SE PUEDE REGRESAR UN ELEMENTO DE UNA LISTA VACIA");
+		}
+	}
+	
+	public boolean estaVacia() {
+		return this.size==0;
+		
+	}
+	
+	public void insertarInicio(E dato) { //AQUI ESTAMOS AGREGANDO UN DATO A LA PARTE DE INICIO
+		NodoLE<E> nvo=new NodoLE<>(dato,this.inicio); //AQUI CREAMOS EL NODO CON EL DATO Y LA DIRECCION DE INICIO
+		this.inicio=nvo;//A INICIO LE TIENES QUE AGREGAR LA DIRECCION DEL NUEVO 
+		if(this.size==0)
+			this.fin=nvo;
+		this.size++;
+			
+	}
+	
+	public void insertarFin(E dato) {//INSERTA UN DATO AL FINAL
+		
+		if(this.estaVacia()) {
+			this.insertarInicio(dato);
+		}else {
+		NodoLE<E> nvo=new NodoLE<>(dato);
+		this.fin.setNext(nvo);
+		this.fin=nvo;
+		this.size++;
+		}
+	}
+	
+	public E borrarInicio() {
+		try {
+		E res=this.inicio();//regresa el dato que se borro
+		this.inicio=this.inicio.getNext();
+		this.size--;
+		if(this.size==0) {
+			this.fin=null;
+		}
+		return res;
+		}catch (NoSuchElementException e) {
+			throw new IndexOutOfBoundsException("no se puede borrar el primer elemento de una lista ");
+		}
+	}
+	
+	public E borrarFin() {
+		if(size>1) {
+		E res=this.fin();
+		NodoLE<E> current=this.inicio;
+		for(int x=0;x<this.size-2;x++) {
+			current=current.getNext();
+		}
+		current.setNext(null);
+		this.fin=current;
+		this.size--;
+		return res;
+		}
+		else {
+			try {
+			return this.borrarInicio();
+		}catch(IndexOutOfBoundsException ex){
+			throw new IndexOutOfBoundsException("NO SE PUEDE BORRAR EL ULTIMO ELEMENTO DE UNA LISTA DE TAMANO 1");
+		}
+			
+		}
+	}
+	
+	public void flush() { //BORRAR TODA LA LISTA
+		this.inicio=this.fin=null;
+		this.size=0;
+		System.gc();
+	}
+	
+	public E borrarEn(int pos) throws IndexOutOfBoundsException{
+		E dato=null;
+		if(pos>0&&pos<this.size()) {
+			NodoLE<E> current=this.inicio;
+			for(int x=0;x<pos-1;x++) {
+				current=current.getNext();
+			}
+			dato=current.getNext().getDato();
+			current.setNext(current.getNext().getNext());
+			size--;
+			
+			}else {
+				borrarFin();
+			}
+		return dato;
+	}
+	
+	public E getEn(int pos){
+		if(pos<this.size()) {
+		NodoLE<E> current=this.inicio;
+		for(int x=0;x<pos;x++) {
+			current=current.getNext();
+		}
+		return current.getDato();
+		}else {
+			return inicio();
+		}
+	}
+	
+	public void setEn(E dato, int pos) throws IndexOutOfBoundsException{
+		
+		if(pos<0&&pos<this.size()) {
+			NodoLE<E> current=this.inicio;
+			for(int x=0;x<pos;x++) {
+				current=current.getNext();
+			}
+						
+			current.setDato(dato);
+			
+			}else {
+				throw new IndexOutOfBoundsException("NO SE PUEDE REGRESAR EL ELEMENTO DE LA POSICION "+pos);
+			}
+	}
+	
+	
+	public String toString() {
+		NodoLE<E> current=this.inicio;
+		String resultado="";
+		for(int x=0;x<size;x++) {
+			resultado+=current.getDato()+",";
+			current=current.getNext()
+;		}
+		return resultado;
+	}
+	
+	
+	
+	public E pop() { //METODO DE UNA PILA //SACA EL PRIMER DATO 
+		NodoLE<E> current=this.inicio;
+		try {
+			return current.getDato();
+		}catch (IndexOutOfBoundsException ex) {
+			throw new NoSuchElementException("No se puede hacer un dequeue en una cola vacia");
+	}
+	}
+	
+	public 	E popNodo() { //METODO DE UNA PILA //SACA EL PRIMER DATO 
+		try {
+			return this.inicio.getDato();
+		}catch (IndexOutOfBoundsException ex) {
+			throw new NoSuchElementException("No se puede hacer un dequeue en una cola vacia");
+	}
+	}
+	
+	
+	
+	
+	
+	
+//////////////////////////////////////////////////////////////////////////////////	
+	
+	public static void main(String[]args) {
+//		MiListaEnlazada<Integer> lista1=new MiListaEnlazada();
+//		for(int x=0;x<4;x++) {
+//			lista1.insertarInicio(x);
+//		}
+//		//lista1.insertarEn(100, 1);
+//		//lista1.insertarInicio(200);
+//		System.out.print(lista1);
+//		//System.out.println("");
+//		//lista1.borrarEn(1);
+//		//System.out.print(lista1);
+//		//lista1.borrarFin();
+//		//lista1.borrarInicio();
+//		//System.out.println("");
+//		//System.out.print(lista1);
+//		System.out.println("");
+//		//lista1.insertarFin(500);
+//		lista1.borrarInicio();
+//		System.out.print(lista1);
+//		
+//		//Integer datos[]= {1,2,3,4,5,6};//CUANDO SE VAN IINTRODUCIENDO SOLO APUNTA A LA POSICION A RECORRE TODO? 
+//		//MiListaEnlazada<Integer> lista2=new MiListaEnlazada(datos);
+//		//lista2.insertarEn(100, 3);
+//		//System.out.print(lista2);
+
+	}
+
+	/////////////////////////////////////////////////////////////////////////////////////	
+	class NodoLE <E>{
+		
+		private E dato; //IMPORTANTES ESTAS VARIABLES PORQUE UN NODO CONTIENE DIRECCION Y EL DATO
+		private NodoLE<E> next;
+		
+		public NodoLE(E dato) { //INICIALIZAR UN NODO CON SOLO EL DATO, LA DIRECCION NULL PORQUE SE LA INDICAS DESPUES
+			this(dato,null); //INSERTAR EN O INSERTAR FIN
+		}
+
+		
+		
+		public NodoLE(E dato, NodoLE<E> next) { //LE VAS A PASAR EL DATO Y ADEMAS LE PASAS LA DIRECCION DE LA CUAL SERA ENLAZADA 
+			super(); //INSERTAR INICIO
+			this.dato = dato;
+			this.next = next;
+		}
+		
+		//COMO ES PRIVADO EL OBJETO DE NODO, NECESITAS GETTER Y SETTER 
+		public E getDato() {  //PERMITE OBTENER EL DATO DEL NODO
+			return dato;
+		}
+		public void setDato(E dato) { //PERMITE ASIGNARLE EL DATO AL NODO
+			this.dato = dato;
+		}
+		public NodoLE<E> getNext() { //PERMITE SABER CUAL ES EL SIGUIENTE EN LA LISTA 
+			return next;
+		}
+		public void setNext(NodoLE<E> next) { //ASIGNAR UN NODO COMO EL SIGUIENTE EN LA LISTA
+			this.next = next;
+		}
+		
+		public String toString() {//METODO DE IMPLEMENTACION DIRECTA QUE TE PERMITE IMPRIMIR LA LISTA DE MANERA CORRECTA DESDE EL PRINCIPIO
+			return this.dato+";"+this.next;
+		}
+		
+	}}
+
